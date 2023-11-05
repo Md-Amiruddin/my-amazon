@@ -1,4 +1,4 @@
-import { cart , removeFromCart } from "../data/cart.js";
+import { cart , removeFromCart, updateDeliveryOption } from "../data/cart.js";
 import { products } from "../data/products.js";
 import { formatCurrency } from "./utils/money.js";
 import dayjs from 'https://unpkg.com/dayjs@1.11.10/esm/index.js';
@@ -77,11 +77,13 @@ function renderOrderSummary() {
         deliveryOptions.forEach((option) => {
             const deliveryDate = today.add(option.deliveryDays, 'days');
             const dateString = deliveryDate.format('dddd, MMMM D');
-            const priceString = option.priceCents === 0 ? 'FREE' : `${formatCurrency(option.priceCents)} -`;
+            const priceString = option.priceCents === 0 ? 'FREE' : `$${formatCurrency(option.priceCents)} -`;
             const isChecked = cartItem.deliveryOptionId === option.id ? 'checked' : '';
             html += 
             `
-                <div class="delivery-option">
+                <div class="delivery-option js-delivery-option"
+                data-product-id='${checkoutProduct.id}'
+                data-delivery-option-id='${option.id}'>
                     <input type="radio"
                         ${isChecked}
                         class="delivery-option-input"
@@ -91,7 +93,7 @@ function renderOrderSummary() {
                         ${dateString}
                         </div>
                         <div class="delivery-option-price">
-                        $${priceString} Shipping
+                        ${priceString} Shipping
                         </div>
                     </div>
                 </div>
@@ -111,4 +113,12 @@ document.querySelectorAll('.js-delete-link').forEach((link) => {
         removeFromCart(removeProductId);
         document.querySelector(`.js-cart-item-container-${removeProductId}`).remove();
     })
+});
+
+document.querySelectorAll('.js-delivery-option').forEach((element) => {
+    element.addEventListener('click', () => {
+        const deliveryOptionId = element.dataset.deliveryOptionId;
+        const productId = element.dataset.productId;
+        updateDeliveryOption(deliveryOptionId, productId);
+    });
 });
