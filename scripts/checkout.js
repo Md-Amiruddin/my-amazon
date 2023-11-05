@@ -7,6 +7,8 @@ import { deliveryOptions } from "../data/deliveryOptions.js";
 renderOrderSummary();
 
 function renderOrderSummary() {
+
+    document.querySelector('.js-cart-quantity').innerHTML = `${cart.length} item(s)`;
     
     let cartSummaryHTML = '';
 
@@ -105,20 +107,26 @@ function renderOrderSummary() {
 
     document.querySelector('.js-order-summary').innerHTML = cartSummaryHTML;
 
-}
+    document.querySelectorAll('.js-delete-link').forEach((link) => {
+        link.addEventListener('click', () => {
+            const removeProductId = link.dataset.productId;
+            removeFromCart(removeProductId);
 
-document.querySelectorAll('.js-delete-link').forEach((link) => {
-    link.addEventListener('click', () => {
-        const removeProductId = link.dataset.productId;
-        removeFromCart(removeProductId);
-        document.querySelector(`.js-cart-item-container-${removeProductId}`).remove();
-    })
-});
-
-document.querySelectorAll('.js-delivery-option').forEach((element) => {
-    element.addEventListener('click', () => {
-        const deliveryOptionId = element.dataset.deliveryOptionId;
-        const productId = element.dataset.productId;
-        updateDeliveryOption(deliveryOptionId, productId);
+            //one way of updating the page with required changes
+            // document.querySelector(`.js-cart-item-container-${removeProductId}`).remove();
+            
+            // another way of updating the page(update the whole page) ( better )
+            renderOrderSummary();
+        })
     });
-});
+
+    document.querySelectorAll('.js-delivery-option').forEach((element) => {
+        element.addEventListener('click', () => {
+            const deliveryOptionId = element.dataset.deliveryOptionId;
+            const productId = element.dataset.productId;
+            updateDeliveryOption(deliveryOptionId, productId);
+            renderOrderSummary();
+        });
+    });
+
+}
