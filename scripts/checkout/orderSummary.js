@@ -1,32 +1,28 @@
-import { cart , removeFromCart, updateDeliveryOption } from "../../data/cart.js";
-import { products } from "../../data/products.js";
+import { cart , removeFromCart, updateDeliveryOption, getCartQuantity } from "../../data/cart.js";
+import { getProduct } from "../../data/products.js";
 import { formatCurrency } from "../utils/money.js";
 import dayjs from 'https://unpkg.com/dayjs@1.11.10/esm/index.js';
-import { deliveryOptions } from "../../data/deliveryOptions.js";
+import { deliveryOptions , getDeliveryOption } from "../../data/deliveryOptions.js";
+import { renderPaymentSummary } from "./paymentSummary.js";
+
+function calculateDateString(deliveryOption) {
+    const today = dayjs();
+    const deliveryDate = today.add(deliveryOption.deliveryDays, 'days');
+    const dateString = deliveryDate.format('dddd, MMMM D');
+
+    return dateString;
+}
 
 export function renderOrderSummary() {
 
-    document.querySelector('.js-cart-quantity').innerHTML = `${cart.length} item(s)`;
+    document.querySelector('.js-cart-quantity').innerHTML = `${getCartQuantity()} item(s)`;
     
     let cartSummaryHTML = '';
 
     cart.forEach((cartItem) => {
-        let checkoutProduct = '';
-        let dateString = '';
-    
-        products.forEach((productItem) => {
-            if(cartItem.productId === productItem.id){
-                checkoutProduct = productItem;
-            }
-        });
-
-        deliveryOptions.forEach((option) => {
-            if(option.id === cartItem.deliveryOptionId){
-                const today = dayjs();
-                const deliveryDate = today.add(option.deliveryDays, 'days');
-                dateString = deliveryDate.format('dddd, MMMM D');
-            }
-        });
+        let checkoutProduct = getProduct(cartItem.productId);
+        let deliveryOption = getDeliveryOption(cartItem.deliveryOptionId);
+        const dateString = calculateDateString(deliveryOption);
     
         cartSummaryHTML += `
             <div class="cart-item-container js-cart-item-container-${checkoutProduct.id}">
@@ -115,6 +111,7 @@ export function renderOrderSummary() {
             
             // another way of updating the page(update the whole page) ( better )
             renderOrderSummary();
+            renderPaymentSummary();
         })
     });
 
@@ -124,6 +121,7 @@ export function renderOrderSummary() {
             const productId = element.dataset.productId;
             updateDeliveryOption(deliveryOptionId, productId);
             renderOrderSummary();
+            renderPaymentSummary();
         });
     });
 
